@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.bw.dao.StudentDao">
+  <resultMap type="Student" id="smap">
+  	<id property="sid" column="sid"/>
+  	<result property="sname" column="sname"/>
+  	<result property="age" column="age"/>
+  	<result property="pwd" column="pwd"/>
+  	<result property="sex" column="sex"/>
+  	<result property="url" column="url"/>
+  	<collection property="type" ofType="Type" select="see" column="sid"></collection>
+  </resultMap>
+  
+  
+  <select id="list" resultMap="smap">
+  	select * from student
+  	<where>
+  		<if test="sname!=null and sname!=''">
+  		and sname like concat('%',#{sname},'%')
+  		</if>
+  		<if test="staage!=null and staage!='' and endage!=null and endage!=''">
+  		and age between #{staage} and #{endage}
+  		</if>
+  		<if test="cids!=null and cids.length>0">
+  		and sid in
+  		(SELECT sid from  gt where cid in
+  		<foreach collection="cids" item="ids" open="(" separator="," close=")">
+  		#{ids}
+  		</foreach>
+  		)
+  		</if>
+  	</where>
+  </select>
+  <select id="see" resultType="Type">
+  	SELECT * from gt g LEFT JOIN type t on g.cid=t.cid and g.sid=#{sid}
+  </select>
+  
+  <insert id="adds">
+  <selectKey keyProperty="sid" order="AFTER" resultType="int">
+  		select last_insert_id()
+  </selectKey>
+  insert into student
+  <set>
+  	<if test="age!=null and age!=''">
+  		age=#{age},
+  	</if>
+  	<if test="pwd!=null and pwd!=''">
+  		pwd=#{pwd},
+  	</if>
+  	<if test="sex!=null and sex!=''">
+  		sex=#{sex},
+  	</if>
+  	<if test="sname!=null and sname!=''">
+  		sname=#{sname},
+  	</if>
+  	<if test="url!=null and url!=''">
+  		url=#{url},
+  	</if>
+  </set>
+  </insert>
+  
+  <insert id="addg">
+  	insert into gt values
+  	<foreach collection="mids" item="id" separator=",">
+  		(0,#{sid},#{id})
+  	</foreach>
+  </insert>
+  
+  <update id="update">
+  	update student
+  	<set>
+  	<if test="age!=null and age!=''">
+  		age=#{age},
+  	</if>
+  	<if test="pwd!=null and pwd!=''">
+  		pwd=#{pwd},
+  	</if>
+  	<if test="sex!=null and sex!=''">
+  		sex=#{sex},
+  	</if>
+  	<if test="sname!=null and sname!=''">
+  		sname=#{sname},
+  	</if>
+  	<if test="url!=null and url!=''">
+  		url=#{url},
+  	</if>
+  </set>
+  <where>
+  	sid=#{sid}
+  </where>
+  </update>
+  
+  <insert id="insert">
+  	insert into gt values
+  	<foreach collection="mids" item="id" separator=",">
+  		(0,#{sid},#{id})
+  	</foreach>
+  </insert>
+  
+  <delete id="dels">
+  	delete from student where sid in
+  	<foreach collection="sid" item="id" open="(" separator="," close=")">
+  		#{id}
+  	</foreach>
+  </delete>
+  
+  <delete id="delg">
+  	delete from gt where sid in
+  	<foreach collection="sid" item="id" open="(" separator="," close=")">
+  		#{id}
+  	</foreach>
+  </delete>
+  </mapper>
